@@ -14,15 +14,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     GameModule,
     AuthModule,
     UserModule,
-    /* TypeOrmModule.forRoot({
-      type: 'postgres',
-      username: 'iwwcracb',
-      password: 'pTL9TQ67CgYeB_JnVzQenxqMgdrbU5AK',
-      url: 'postgres://iwwcracb:pTL9TQ67CgYeB_JnVzQenxqMgdrbU5AK@manny.db.elephantsql.com/iwwcracb',
-      database: 'Slot_App',
-      entities: [User],
-      synchronize: true,
-    }), */
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

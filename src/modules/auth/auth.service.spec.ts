@@ -2,19 +2,31 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { UserService } from '../user';
 import { ConfigService } from '@nestjs/config';
-import { BadRequestException, ConflictException } from '@nestjs/common';
-import { RegisterUserDto } from 'src/domain';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { LoginUserDto, RegisterUserDto } from '../../domain';
 import { faker } from '@faker-js/faker';
+import bcrypt from 'bcrypt';
 
 jest.mock('../user');
 
 describe('AuthService', () => {
   let authService: AuthService;
   let userService: UserService;
+  const mockConfigService = {
+    get: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, UserService, ConfigService],
+      providers: [
+        AuthService,
+        UserService,
+        { provide: ConfigService, useValue: mockConfigService },
+      ],
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
@@ -105,5 +117,87 @@ describe('AuthService', () => {
       });
       expect(userService.create).not.toHaveBeenCalled();
     });
+  });
+
+  describe('login', () => {
+    beforeEach(() => {
+      mockConfigService.get.mockReturnValue('mocked_secret_key');
+    });
+    it('should user login', async () => {
+      const password = faker.string.sample();
+      const email = faker.internet.email();
+      const loginUserDto: LoginUserDto = {
+        email,
+        password: password,
+      };
+
+      const mockUser = {
+        id: faker.number.int(),
+        email,
+        password,
+        name: faker.string.sample(),
+        surname: faker.string.sample(),
+        coins: 100,
+      };
+
+      userService.findOne = jest.fn().mockResolvedValueOnce(mockUser);
+      const spiedBcryptHashMethod = jest
+        .spyOn(bcrypt, 'compare')
+        .mockImplementation(() => Promise.resolve(true));
+
+      const result = await authService.login(loginUserDto);
+      expect(spiedBcryptHashMethod).toHaveBeenCalled();
+      expect(result).toEqual({
+        access_token: expect.any(String),
+        user: {
+          email,
+          name: mockUser.name,
+          surname: mockUser.surname,
+          coins: mockUser.coins,
+        },
+      });
+      expect(userService.findOne).toHaveBeenCalledWith({
+        where: { email },
+      });
+    });
+
+    it('should throw NotFoundException if user does not exist', async () => {
+      userService.findOne = jest.fn().mockResolvedValueOnce(undefined);
+      const loginUserDto = {
+        email: faker.internet.email(),
+        password: faker.string.sample(),
+      };
+
+      await expect(authService.login(loginUserDto)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+  it('should throw BadRequestException if password is not correct', async () => {
+    const password = faker.string.sample();
+    const email = faker.internet.email();
+    const loginUserDto: LoginUserDto = {
+      email,
+      password: password,
+    };
+
+    const mockUser = {
+      id: faker.number.int,
+      email,
+      password,
+      name: faker.string.sample(),
+      surname: faker.string.sample(),
+      coins: 100,
+    };
+
+    userService.findOne = jest.fn().mockResolvedValueOnce(mockUser);
+    const spiedBcryptHashMethod = jest
+      .spyOn(bcrypt, 'compare')
+      .mockImplementation(() => Promise.resolve(false));
+
+    expect(spiedBcryptHashMethod).toHaveBeenCalled();
+    await expect(authService.login(loginUserDto)).rejects.toThrow(
+      BadRequestException,
+    );
   });
 });

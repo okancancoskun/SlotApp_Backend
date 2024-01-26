@@ -72,8 +72,8 @@ export class GameService {
     };
   }
 
-  private getReward(slot_type: string, reward_type: string): number {
-    return rewards[`${slot_type}_${reward_type}`] || 0;
+  private getReward(slotType: string, rewardType: string): number {
+    return rewards[`${slotType}_${rewardType}`] || 0;
   }
 
   private getRandomResult(): SLOT[] {
