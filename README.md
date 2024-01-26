@@ -28,6 +28,8 @@
 
 ## Installation
 
+<b>First of all create an '.env' file in project directory according to '.env.example'. Text necessary variables in .env file.</b>
+
 ```bash
 $ yarn install
 ```
