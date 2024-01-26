@@ -11,11 +11,12 @@ import {
   LoginResult,
   LoginUserDto,
   RegisterUserDto,
+  User,
 } from '../../domain';
 import { compare } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
-
+import { plainToInstance } from 'class-transformer';
 @Injectable()
 export class AuthService {
   constructor(
@@ -34,7 +35,9 @@ export class AuthService {
       throw new BadRequestException('Passwords are not matched');
     delete dto.repeatPassword;
     try {
-      const { email, name, surname } = await this.userService.create(dto);
+      const { email, name, surname } = await this.userService.create(
+        plainToInstance(User, dto),
+      );
       return {
         isSuccess: true,
         data: { email, name, surname },
