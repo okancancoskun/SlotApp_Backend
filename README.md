@@ -22,9 +22,10 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+## SlotApp
+Slot App Backend Repositoy.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Live App Url - [https://slotapp-backend.onrender.com](https://slotapp-backend.onrender.com)
 
 ## Installation
 
